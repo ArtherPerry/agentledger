@@ -55,6 +55,36 @@ public final class Database {
                     s.executeUpdate("UPDATE fee_rules SET type_name='" + TxnType.PASSWORD_WITHDRAW + "' WHERE type_name IS NULL");
                 }
             },
+            // v7 -> v8: transaction types get an editable display name, ordering, and a
+            // builtin flag so the owner can rename/disable/reorder and add custom types.
+            // Idempotent: only adds columns if absent; backfills once.
+            conn -> {
+                try (Statement s = conn.createStatement()) {
+                    java.util.Set<String> cols = new java.util.HashSet<>();
+                    try (ResultSet rs = s.executeQuery("PRAGMA table_info(txn_types)")) {
+                        while (rs.next()) cols.add(rs.getString("name"));
+                    }
+                    if (!cols.contains("display_name"))
+                        s.executeUpdate("ALTER TABLE txn_types ADD COLUMN display_name TEXT");
+                    if (!cols.contains("sort_order"))
+                        s.executeUpdate("ALTER TABLE txn_types ADD COLUMN sort_order INTEGER");
+                    if (!cols.contains("is_builtin"))
+                        s.executeUpdate("ALTER TABLE txn_types ADD COLUMN is_builtin INTEGER NOT NULL DEFAULT 0");
+                    s.executeUpdate("UPDATE txn_types SET display_name = name WHERE display_name IS NULL");
+                    s.executeUpdate("UPDATE txn_types SET sort_order = id WHERE sort_order IS NULL");
+                    String builtinList = "'" + String.join("','",
+                            com.agentledger.model.TxnType.PASSWORD_WITHDRAW,
+                            com.agentledger.model.TxnType.PASSWORD_TRANSFER,
+                            com.agentledger.model.TxnType.WALLET_TO_WALLET,
+                            com.agentledger.model.TxnType.ACCOUNT_WITHDRAW,
+                            com.agentledger.model.TxnType.CASH_TO_ACCOUNT,
+                            com.agentledger.model.TxnType.TOPUP_DIGITAL,
+                            com.agentledger.model.TxnType.TOPUP_CASH,
+                            com.agentledger.model.TxnType.REPAY_RECEIVABLE,
+                            com.agentledger.model.TxnType.REPAY_PAYABLE) + "'";
+                    s.executeUpdate("UPDATE txn_types SET is_builtin = 1 WHERE name IN (" + builtinList + ")");
+                }
+            },
     };
 
     /** Schema version the code expects = baseline + number of migrations. */

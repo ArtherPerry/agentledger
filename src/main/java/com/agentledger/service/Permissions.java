@@ -63,4 +63,8 @@ public final class Permissions {
     public static boolean canViewHistory() { return ownerOrManager(); }
     public static boolean canViewAccounts() { return ownerOrManager(); }
     public static boolean canViewDebts() { return ownerOrManager(); }
+    public static boolean canManageTxnTypes() {
+        User u = Session.user();
+        return u != null && u.isOwner();   // owner manages transaction types (proposal #15)
+    }
 }

@@ -1,10 +1,11 @@
 package com.agentledger.model;
 
-public record TxnType(int id, String name, String cashEffect, String digitalEffect) {
+public record TxnType(int id, String name, String displayName, String cashEffect,
+                      String digitalEffect, boolean active, boolean builtin) {
 
-    @Override public String toString() { return name; }
+    @Override public String toString() { return displayName != null ? displayName : name; }
 
-    // ---- Canonical type names (DATA, not UI text — never translate these) ----
+    // ---- Canonical type names (DATA, not UI text — never translate or rename these) ----
     public static final String PASSWORD_WITHDRAW = "Password ဖြင့် ထုတ်ယူ";
     public static final String PASSWORD_TRANSFER = "Password ဖြင့် လွဲ";
     public static final String WALLET_TO_WALLET  = "အကောင့်မှ အကောင့်";
@@ -20,7 +21,16 @@ public record TxnType(int id, String name, String cashEffect, String digitalEffe
             TOPUP_DIGITAL, TOPUP_CASH, REPAY_RECEIVABLE, REPAY_PAYABLE
     };
 
-    /** SQL-quoted, comma-separated list of internal names for NOT IN (...) clauses. */
+    public static final String[] BUILTIN_USER = {
+            PASSWORD_WITHDRAW, PASSWORD_TRANSFER, WALLET_TO_WALLET, ACCOUNT_WITHDRAW, CASH_TO_ACCOUNT
+    };
+
+    public static boolean isBuiltinName(String n) {
+        for (String s : BUILTIN_USER) if (s.equals(n)) return true;
+        for (String s : INTERNAL)     if (s.equals(n)) return true;
+        return false;
+    }
+
     public static String internalSqlList() {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < INTERNAL.length; i++) {

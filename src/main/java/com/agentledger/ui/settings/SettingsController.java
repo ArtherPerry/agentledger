@@ -24,12 +24,12 @@ public class SettingsController {
     @FXML
     public void initialize() {
         addTab(I18n.t("settings.tab.fees"), "/fxml/settings/fees.fxml");
+        if (Permissions.canManageTxnTypes())
+            addTab(I18n.t("settings.tab.txntypes"), "/fxml/settings/txntypes.fxml");
         addTab(I18n.t("settings.tab.users"), "/fxml/settings/users.fxml");
         addTab(I18n.t("settings.tab.branches"), "/fxml/settings/branches.fxml");
         addTab(I18n.t("settings.tab.activity"), "/fxml/settings/activity.fxml");
         addTab(I18n.t("settings.tab.backup"), "/fxml/settings/backup.fxml");
-
-        if (!buttons.isEmpty()) select(buttons.get(0), "/fxml/settings/fees.fxml");
     }
 
     private void addTab(String label, String fxml) {

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.agentledger.ui.settings.TxnTypesController"
+      spacing="12" style="-fx-background-color:white;-fx-background-radius:12;-fx-border-color:#e5e9e7;-fx-border-radius:12;">
+    <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+
+    <HBox alignment="CENTER_LEFT">
+        <Label text="%txntype.title" style="-fx-font-weight:bold;-fx-text-fill:#0C3B3C;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="addBtn" text="%txntype.btn.add" onAction="#onAdd"
+                style="-fx-background-color:#0E7C7B;-fx-text-fill:white;-fx-font-weight:bold;"/>
+    </HBox>
+    <Label fx:id="hint" wrapText="true" style="-fx-font-size:11px;-fx-text-fill:#5C6967;"
+           text="%txntype.intro"/>
+
+    <TableView fx:id="table" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colName" text="%txntype.col.name" prefWidth="220"/>
+            <TableColumn fx:id="colCash" text="%txntype.col.cash" prefWidth="110"/>
+            <TableColumn fx:id="colDigital" text="%txntype.col.digital" prefWidth="110"/>
+            <TableColumn fx:id="colStatus" text="%txntype.col.status" prefWidth="140"/>
+            <TableColumn fx:id="colAction" text="" prefWidth="300"/>
+        </columns>
+    </TableView>
+</VBox>

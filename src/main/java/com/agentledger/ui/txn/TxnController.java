@@ -30,7 +30,7 @@ public class TxnController {
     @FXML
     public void initialize() {
         int branch = Session.branchId();
-        canOverride = "owner".equals(Session.user().role());
+        canOverride = true;
 
         typeBox.setItems(FXCollections.observableArrayList(TxnTypeRepo.listForBranch(branch)));
         accountBox.setItems(FXCollections.observableArrayList(AccountRepo.listForBranch(branch)));
