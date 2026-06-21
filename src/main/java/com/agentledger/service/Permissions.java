@@ -54,4 +54,13 @@ public final class Permissions {
         User u = Session.user();
         return u != null && (u.isOwner() || u.isManager());
     }
+    // --- sidebar visibility (cashier = data entry only) ---
+    public static boolean isCashier() {
+        User u = Session.user();
+        return u != null && !u.isOwner() && !u.isManager();
+    }
+    public static boolean canViewHome() { return ownerOrManager(); }
+    public static boolean canViewHistory() { return ownerOrManager(); }
+    public static boolean canViewAccounts() { return ownerOrManager(); }
+    public static boolean canViewDebts() { return ownerOrManager(); }
 }

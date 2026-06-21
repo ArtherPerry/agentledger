@@ -31,24 +31,29 @@ public class DashboardController {
 
         Router.setContentArea(contentArea);
 
-        // main items (always visible)
-        addNav(I18n.t("nav.home"), View.HOME);
-        addNav(I18n.t("nav.txn"), View.TXN);
-        addNav(I18n.t("nav.history"), View.HISTORY);
-        addNav(I18n.t("nav.accounts"), View.ACCOUNTS);
-        addNav(I18n.t("nav.payrec"), View.PAYREC);
-        addNav(I18n.t("nav.close"), View.CLOSE);
-        if (Permissions.canViewReports()) addNav(I18n.t("nav.reports"), View.REPORTS);
+        // main items — cashier sees ONLY the transaction screen (data entry only)
+        if (Permissions.canViewHome())     addNav(I18n.t("nav.home"), View.HOME);
+        addNav(I18n.t("nav.txn"), View.TXN);   // everyone (the data-entry screen)
+        if (Permissions.canViewHistory())  addNav(I18n.t("nav.history"), View.HISTORY);
+        if (Permissions.canViewAccounts()) addNav(I18n.t("nav.accounts"), View.ACCOUNTS);
+        if (Permissions.canViewDebts())    addNav(I18n.t("nav.payrec"), View.PAYREC);
+        if (Permissions.canClose())        addNav(I18n.t("nav.close"), View.CLOSE);
+        if (Permissions.canViewReports())  addNav(I18n.t("nav.reports"), View.REPORTS);
 
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
         sidebar.getChildren().add(spacer);
 
         if (Permissions.canOpenSettings()) addNav(I18n.t("nav.settings"), View.SETTINGS);
-        addBottomAction(I18n.t("nav.switchBranch"), () -> { Session.logout(); Router.to(View.BRANCH); });
+        if (!Permissions.isCashier())
+            addBottomAction(I18n.t("nav.switchBranch"), () -> { Session.logout(); Router.to(View.BRANCH); });
         addBottomAction(I18n.t("nav.logout"), () -> { Session.logoutKeepBranch(); Router.to(View.LOGIN); });
-        // open the default screen
-        if (!navButtons.isEmpty()) select(navButtons.get(0), View.HOME);
+
+        // open the default screen: cashier -> TXN, others -> HOME
+        if (!navButtons.isEmpty()) {
+            View landing = Permissions.isCashier() ? View.TXN : View.HOME;
+            select(navButtons.get(0), landing);
+        }
     }
 
     private void addNav(String label, View view) {
