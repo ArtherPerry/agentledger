@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.agentledger.ui.accounts.AccountsController"
+      spacing="14" style="-fx-background-color:#eef1f0;">
+    <padding><Insets top="22" right="26" bottom="22" left="26"/></padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="8">
+        <Label text="%accounts.title" style="-fx-font-size:18px;-fx-font-weight:bold;-fx-text-fill:#0C3B3C;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="addBtn" text="%accounts.add.btn" onAction="#onAddAccount"
+                style="-fx-background-color:#0E7C7B;-fx-text-fill:white;-fx-font-weight:bold;-fx-background-radius:6;"/>
+        <Button text="↻" onAction="#onRefresh"><tooltip><Tooltip text="%common.refresh.tooltip"/></tooltip></Button>
+    </HBox>
+
+    <HBox spacing="12">
+        <VBox spacing="2" HBox.hgrow="ALWAYS"
+              style="-fx-background-color:white;-fx-background-radius:12;-fx-border-color:#e5e9e7;-fx-border-radius:12;-fx-padding:14;">
+            <Label text="%balance.cash" style="-fx-font-size:11px;-fx-text-fill:#5C6967;"/>
+            <Label fx:id="cashTotal" text="—" style="-fx-font-size:16px;-fx-font-weight:bold;-fx-text-fill:#2C6E2C;"/>
+        </VBox>
+        <VBox spacing="2" HBox.hgrow="ALWAYS"
+              style="-fx-background-color:white;-fx-background-radius:12;-fx-border-color:#e5e9e7;-fx-border-radius:12;-fx-padding:14;">
+            <Label text="%balance.digital" style="-fx-font-size:11px;-fx-text-fill:#5C6967;"/>
+            <Label fx:id="digitalTotal" text="—" style="-fx-font-size:16px;-fx-font-weight:bold;-fx-text-fill:#0C3B3C;"/>
+        </VBox>
+    </HBox>
+
+    <TableView fx:id="table" VBox.vgrow="ALWAYS"
+               style="-fx-background-color:white;-fx-background-radius:12;-fx-border-color:#e5e9e7;-fx-border-radius:12;">
+        <columns>
+            <TableColumn fx:id="colName" text="%col.accountName" prefWidth="220"/>
+            <TableColumn fx:id="colPlatform" text="%col.platform" prefWidth="160"/>
+            <TableColumn fx:id="colBalance" text="%col.balance" prefWidth="200"/>
+            <TableColumn fx:id="colAction" text="" prefWidth="260"/>
+        </columns>
+    </TableView>
+</VBox>

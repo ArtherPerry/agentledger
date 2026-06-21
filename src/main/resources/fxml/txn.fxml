@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+<ScrollPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.agentledger.ui.txn.TxnController"
+            fitToWidth="true" style="-fx-background:#eef1f0;-fx-background-color:#eef1f0;">
+    <VBox spacing="14">
+        <padding><Insets top="22" right="26" bottom="22" left="26"/></padding>
+        <Label text="%txn.title" style="-fx-font-size:18px;-fx-font-weight:bold;-fx-text-fill:#0C3B3C;"/>
+
+        <VBox spacing="12" style="-fx-background-color:white;-fx-background-radius:14;-fx-border-color:#e5e9e7;-fx-border-radius:14;-fx-padding:20;">
+            <GridPane hgap="14" vgap="12">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="50"/>
+                    <ColumnConstraints percentWidth="50"/>
+                </columnConstraints>
+
+                <VBox spacing="4" GridPane.rowIndex="0" GridPane.columnIndex="0">
+                    <Label text="%txn.field.type" style="-fx-font-size:12px;-fx-text-fill:#5C6967;"/>
+                    <ComboBox fx:id="typeBox" maxWidth="Infinity"/>
+                </VBox>
+                <VBox spacing="4" GridPane.rowIndex="0" GridPane.columnIndex="1">
+                    <Label text="%txn.field.account" style="-fx-font-size:12px;-fx-text-fill:#5C6967;"/>
+                    <ComboBox fx:id="accountBox" maxWidth="Infinity"/>
+                </VBox>
+
+                <VBox fx:id="toAccountRow" spacing="4" GridPane.rowIndex="1" GridPane.columnIndex="1" visible="false" managed="false">
+                    <Label text="%txn.field.toAccount" style="-fx-font-size:12px;-fx-text-fill:#5C6967;"/>
+                    <ComboBox fx:id="toAccountBox" maxWidth="Infinity"/>
+                </VBox>
+
+                <VBox spacing="4" GridPane.rowIndex="2" GridPane.columnIndex="0">
+                    <Label text="%txn.field.senderPhone" style="-fx-font-size:12px;-fx-text-fill:#5C6967;"/>
+                    <TextField fx:id="senderPhone" promptText="09xxxxxxxxx"/>
+                </VBox>
+                <VBox spacing="4" GridPane.rowIndex="2" GridPane.columnIndex="1">
+                    <Label text="%txn.field.receiverPhone" style="-fx-font-size:12px;-fx-text-fill:#5C6967;"/>
+                    <TextField fx:id="receiverPhone" promptText="09xxxxxxxxx"/>
+                </VBox>
+
+                <VBox spacing="4" GridPane.rowIndex="3" GridPane.columnIndex="0">
+                    <Label text="%txn.field.amount" style="-fx-font-size:12px;-fx-text-fill:#5C6967;"/>
+                    <TextField fx:id="amount" promptText="0.00"/>
+                </VBox>
+                <VBox spacing="4" GridPane.rowIndex="3" GridPane.columnIndex="1">
+                    <Label text="%txn.field.refNo" style="-fx-font-size:12px;-fx-text-fill:#5C6967;"/>
+                    <TextField fx:id="refNo" promptText="%txn.optional"/>
+                </VBox>
+
+                <VBox spacing="4" GridPane.rowIndex="4" GridPane.columnIndex="0" GridPane.columnSpan="2">
+                    <Label text="%txn.field.note" style="-fx-font-size:12px;-fx-text-fill:#5C6967;"/>
+                    <TextField fx:id="note" promptText="%txn.optional"/>
+                </VBox>
+                <rowConstraints><RowConstraints/><RowConstraints/><RowConstraints/><RowConstraints/><RowConstraints/></rowConstraints>
+            </GridPane>
+        </VBox>
+
+        <VBox spacing="6" style="-fx-background-color:#DCEEEC;-fx-background-radius:14;-fx-border-color:#BFE0DD;-fx-border-radius:14;-fx-padding:16;">
+            <HBox alignment="CENTER_LEFT">
+                <Label text="%txn.preview.amount" style="-fx-text-fill:#0B5B5A;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="pvAmount" text=""/>
+            </HBox>
+            <HBox alignment="CENTER_LEFT">
+                <Label text="%txn.preview.fee" style="-fx-text-fill:#0B5B5A;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="feeField" prefWidth="140" alignment="CENTER_RIGHT"
+                           style="-fx-background-color:transparent;-fx-border-color:#BFE0DD;-fx-text-fill:#0B5B5A;"/>
+            </HBox>
+            <HBox alignment="CENTER_LEFT">
+                <Label text="%txn.preview.comm" style="-fx-text-fill:#0B5B5A;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="commField" prefWidth="140" alignment="CENTER_RIGHT"
+                           style="-fx-background-color:transparent;-fx-border-color:#BFE0DD;-fx-text-fill:#0B5B5A;"/>
+            </HBox>
+            <Label fx:id="feeWarn" wrapText="true" visible="false" managed="false"
+                   style="-fx-text-fill:#8a5a00;-fx-font-size:11px;"/>
+            <Label fx:id="overrideHint" visible="false" managed="false"
+                   style="-fx-text-fill:#0B5B5A;-fx-font-size:11px;-fx-font-style:italic;"/>
+            <Separator/>
+            <HBox alignment="CENTER_LEFT">
+                <Label text="%txn.preview.total" style="-fx-font-weight:bold;-fx-text-fill:#0C3B3C;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="pvTotal" text="" style="-fx-font-weight:bold;-fx-text-fill:#0C3B3C;"/>
+            </HBox>
+        </VBox>
+
+        <HBox spacing="12">
+            <Button fx:id="saveBtn" text="%txn.btn.save" maxWidth="Infinity" HBox.hgrow="ALWAYS"
+                    style="-fx-background-color:#0E7C7B;-fx-text-fill:white;-fx-font-weight:bold;-fx-padding:12;"/>
+            <Button fx:id="clearBtn" text="%txn.btn.clear" onAction="#onClear" maxWidth="Infinity" HBox.hgrow="ALWAYS" style="-fx-padding:12;"/>
+        </HBox>
+    </VBox>
+</ScrollPane>

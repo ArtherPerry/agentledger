@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.agentledger.ui.reports.ReportsController"
+      spacing="14" style="-fx-background-color:#eef1f0;">
+    <padding><Insets top="22" right="26" bottom="22" left="26"/></padding>
+
+    <Label text="%reports.title" style="-fx-font-size:18px;-fx-font-weight:bold;-fx-text-fill:#0C3B3C;"/>
+
+    <HBox spacing="10" alignment="CENTER_LEFT"
+          style="-fx-background-color:white;-fx-background-radius:12;-fx-border-color:#e5e9e7;-fx-border-radius:12;-fx-padding:14;">
+        <ComboBox fx:id="reportType" prefWidth="190"/>
+        <Label fx:id="asOfLabel" text="%reports.asOf"/>
+        <DatePicker fx:id="asOf"/>
+        <Separator orientation="VERTICAL"/>
+        <Label text="%reports.from"/>
+        <DatePicker fx:id="fromDate"/>
+        <Label text="%reports.to"/>
+        <DatePicker fx:id="toDate"/>
+        <Button text="%reports.btn.run" onAction="#onRun"
+                style="-fx-background-color:#0E7C7B;-fx-text-fill:white;-fx-font-weight:bold;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="xlsBtn" text="Excel (10b)" disable="true"/>
+        <Button fx:id="pdfBtn" text="PDF (10b)" disable="true"/>
+    </HBox>
+
+    <HBox fx:id="cardsRow" spacing="12">
+        <VBox spacing="2" HBox.hgrow="ALWAYS" style="-fx-background-color:white;-fx-background-radius:12;-fx-border-color:#e5e9e7;-fx-border-radius:12;-fx-padding:15;">
+            <Label text="%reports.stat.txnCount" style="-fx-font-size:11px;-fx-text-fill:#5C6967;"/>
+            <Label fx:id="sCount" text="0" style="-fx-font-size:20px;-fx-font-weight:bold;-fx-text-fill:#0C3B3C;"/>
+        </VBox>
+        <VBox spacing="2" HBox.hgrow="ALWAYS" style="-fx-background-color:white;-fx-background-radius:12;-fx-border-color:#e5e9e7;-fx-border-radius:12;-fx-padding:15;">
+            <Label text="%reports.stat.fee" style="-fx-font-size:11px;-fx-text-fill:#5C6967;"/>
+            <Label fx:id="sFee" text="0" style="-fx-font-size:16px;-fx-font-weight:bold;-fx-text-fill:#2C6E2C;"/>
+        </VBox>
+        <VBox spacing="2" HBox.hgrow="ALWAYS" style="-fx-background-color:white;-fx-background-radius:12;-fx-border-color:#e5e9e7;-fx-border-radius:12;-fx-padding:15;">
+            <Label text="%reports.stat.comm" style="-fx-font-size:11px;-fx-text-fill:#5C6967;"/>
+            <Label fx:id="sComm" text="0" style="-fx-font-size:16px;-fx-font-weight:bold;-fx-text-fill:#8A5712;"/>
+        </VBox>
+    </HBox>
+
+    <VBox VBox.vgrow="ALWAYS" spacing="8" style="-fx-background-color:white;-fx-background-radius:12;-fx-border-color:#e5e9e7;-fx-border-radius:12;-fx-padding:16;">
+        <Label fx:id="tableTitle" text="%reports.title.platform" style="-fx-font-weight:bold;-fx-text-fill:#0C3B3C;"/>
+
+        <TableView fx:id="platformTable" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colPlatform" text="%col.platform" prefWidth="220"/>
+                <TableColumn fx:id="colCount" text="%col.count" prefWidth="130"/>
+                <TableColumn fx:id="colAmount" text="%col.amountTotal" prefWidth="190"/>
+                <TableColumn fx:id="colComm" text="%col.comm" prefWidth="160"/>
+            </columns>
+        </TableView>
+
+        <TableView fx:id="debtTable" VBox.vgrow="ALWAYS" visible="false" managed="false">
+            <columns>
+                <TableColumn fx:id="colKind" text="%col.type" prefWidth="110"/>
+                <TableColumn fx:id="colName" text="%col.name" prefWidth="200"/>
+                <TableColumn fx:id="colOriginal" text="%reports.col.original" prefWidth="150"/>
+                <TableColumn fx:id="colPaid" text="%reports.col.paid" prefWidth="150"/>
+                <TableColumn fx:id="colRemaining" text="%reports.col.remaining" prefWidth="150"/>
+            </columns>
+        </TableView>
+    </VBox>
+</VBox>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.agentledger.ui.settings.BackupController"
+      spacing="14" style="-fx-background-color:white;-fx-background-radius:12;-fx-border-color:#e5e9e7;-fx-border-radius:12;">
+    <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+
+    <Label text="%backup.title" style="-fx-font-weight:bold;-fx-text-fill:#0C3B3C;"/>
+
+    <HBox fx:id="reminder" spacing="10" alignment="CENTER_LEFT" visible="false" managed="false"
+          style="-fx-background-color:#FAEEDA;-fx-background-radius:8;-fx-padding:10 14 10 14;">
+        <Label text="⚠" style="-fx-text-fill:#633806;"/>
+        <Label fx:id="reminderText" style="-fx-text-fill:#633806;"/>
+    </HBox>
+
+    <Label fx:id="lastLabel" style="-fx-font-size:12px;-fx-text-fill:#5C6967;"/>
+
+    <HBox spacing="10">
+        <Button fx:id="backupBtn" text="%backup.btn.backup" onAction="#onBackup"
+                style="-fx-background-color:#0E7C7B;-fx-text-fill:white;-fx-font-weight:bold;-fx-padding:10 16 10 16;"/>
+        <Button fx:id="restoreBtn" text="%backup.btn.restore" onAction="#onRestore"
+                style="-fx-padding:10 16 10 16;"/>
+    </HBox>
+
+    <Label text="%backup.history" style="-fx-font-weight:bold;-fx-text-fill:#0C3B3C;-fx-padding:8 0 0 0;"/>
+    <TableView fx:id="table" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colTs" text="%col.time" prefWidth="160"/>
+            <TableColumn fx:id="colLoc" text="%col.location" prefWidth="320"/>
+            <TableColumn fx:id="colSize" text="%col.size" prefWidth="90"/>
+            <TableColumn fx:id="colVerified" text="%col.status" prefWidth="100"/>
+        </columns>
+    </TableView>
+</VBox>

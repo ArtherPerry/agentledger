@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.agentledger.ui.login.ResetController"
+           style="-fx-background-color:#eef1f0;">
+    <VBox maxWidth="440" spacing="14" alignment="CENTER_LEFT"
+          style="-fx-background-color:white;-fx-background-radius:14;-fx-padding:32;-fx-border-color:#e5e9e7;-fx-border-radius:14;">
+        <Label text="%reset.title" style="-fx-font-size:20px;-fx-font-weight:bold;-fx-text-fill:#0C3B3C;"/>
+        <Label text="%reset.instruction" wrapText="true" style="-fx-text-fill:#5C6967;-fx-font-size:13px;"/>
+
+        <Label text="%reset.code" style="-fx-font-size:12px;-fx-text-fill:#5C6967;"/>
+        <HBox spacing="8">
+            <TextField fx:id="codeField" editable="false" HBox.hgrow="ALWAYS" style="-fx-font-family:monospace;"/>
+            <Button text="%license.copy" onAction="#onCopy"/>
+        </HBox>
+
+        <Label text="%reset.key" style="-fx-font-size:12px;-fx-text-fill:#5C6967;"/>
+        <TextField fx:id="keyField" promptText="%reset.key"/>
+
+        <Label text="%reset.newPassword" style="-fx-font-size:12px;-fx-text-fill:#5C6967;"/>
+        <PasswordField fx:id="newPassword"/>
+        <Label text="%reset.newPasswordConfirm" style="-fx-font-size:12px;-fx-text-fill:#5C6967;"/>
+        <PasswordField fx:id="newPasswordConfirm"/>
+
+        <Label fx:id="message" wrapText="true" visible="false" managed="false" style="-fx-font-size:12px;"/>
+
+        <HBox spacing="10">
+            <Button text="%reset.apply" onAction="#onApply"
+                    style="-fx-background-color:#0E7C7B;-fx-text-fill:white;-fx-font-weight:bold;-fx-padding:12;"
+                    maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+            <Button text="%reset.back" onAction="#onBack" style="-fx-padding:12;"/>
+        </HBox>
+    </VBox>
+</StackPane>

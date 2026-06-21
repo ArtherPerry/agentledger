@@ -1,0 +1,21 @@
+# Build output (rebuilt per-platform — must NOT cross OSes)
+target/
+
+# IntelliJ
+.idea/
+*.iml
+
+# Mac
+.DS_Store
+
+# Secrets — NEVER commit these
+*.key
+agentledger-private.key
+license.key
+
+# Local DB / logs (runtime data, not source)
+*.db
+*.db-wal
+*.db-shm
+app.log
+*.bak

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+<ScrollPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.agentledger.ui.close.CloseController"
+            fitToWidth="true" style="-fx-background:#eef1f0;-fx-background-color:#eef1f0;">
+    <VBox spacing="14">
+        <padding><Insets top="22" right="26" bottom="22" left="26"/></padding>
+
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <Label text="%close.title" style="-fx-font-size:18px;-fx-font-weight:bold;-fx-text-fill:#0C3B3C;"/>
+            <Label fx:id="statusBadge" text="%close.status.open"
+                   style="-fx-background-color:#FAEEDA;-fx-text-fill:#633806;-fx-padding:3 10 3 10;-fx-background-radius:99;-fx-font-size:11px;"/>
+        </HBox>
+        <Label text="%close.intro"
+               style="-fx-text-fill:#5C6967;-fx-font-size:12px;" wrapText="true"/>
+
+        <VBox spacing="10" style="-fx-background-color:white;-fx-background-radius:12;-fx-border-color:#e5e9e7;-fx-border-radius:12;-fx-padding:16;">
+            <Label text="%close.section.balances" style="-fx-font-weight:bold;-fx-text-fill:#0C3B3C;"/>
+            <GridPane fx:id="grid" hgap="14" vgap="10">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="34"/>
+                    <ColumnConstraints percentWidth="22"/>
+                    <ColumnConstraints percentWidth="22"/>
+                    <ColumnConstraints percentWidth="22"/>
+                </columnConstraints>
+            </GridPane>
+        </VBox>
+
+        <VBox spacing="10" style="-fx-background-color:white;-fx-background-radius:12;-fx-border-color:#e5e9e7;-fx-border-radius:12;-fx-padding:16;">
+            <HBox>
+                <Label text="%close.totalDiff" style="-fx-text-fill:#5C6967;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="totalDiff" text="" style="-fx-font-weight:bold;"/>
+            </HBox>
+            <HBox fx:id="warnBox" spacing="10" alignment="CENTER_LEFT" visible="false" managed="false"
+                  style="-fx-background-color:#FAEEDA;-fx-background-radius:8;-fx-padding:10 14 10 14;">
+                <Label text="⚠" style="-fx-text-fill:#633806;"/>
+                <Label text="%close.warn" style="-fx-text-fill:#633806;"/>
+            </HBox>
+            <VBox spacing="4">
+                <Label text="%close.reason" style="-fx-font-size:12px;-fx-text-fill:#5C6967;"/>
+                <TextField fx:id="reason" promptText="%close.reason.prompt"/>
+            </VBox>
+            <HBox spacing="12">
+                <Button fx:id="closeBtn" text="%close.btn.close" onAction="#onClose"
+                        maxWidth="Infinity" HBox.hgrow="ALWAYS"
+                        style="-fx-background-color:#0E7C7B;-fx-text-fill:white;-fx-font-weight:bold;-fx-padding:12;"/>
+                <Button fx:id="reopenBtn" text="%close.btn.reopen" onAction="#onReopen" visible="false" managed="false"
+                        style="-fx-padding:12 18 12 18;"/>
+            </HBox>
+        </VBox>
+    </VBox>
+</ScrollPane>

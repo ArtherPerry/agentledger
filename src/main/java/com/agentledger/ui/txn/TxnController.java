@@ -1,0 +1,161 @@
+package com.agentledger.ui.txn;
+
+import com.agentledger.model.TxnType;
+import com.agentledger.i18n.Fmt;
+import com.agentledger.i18n.I18n;
+import com.agentledger.model.*;
+import com.agentledger.repo.*;
+import com.agentledger.service.*;
+import com.agentledger.utils.Money;
+import javafx.collections.FXCollections;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
+
+public class TxnController {
+
+    @FXML private ComboBox<TxnType> typeBox;
+    @FXML private ComboBox<Account> accountBox;
+    @FXML private ComboBox<Account> toAccountBox;
+    @FXML private VBox toAccountRow;
+    @FXML private TextField senderPhone, receiverPhone, amount, refNo, note;
+    @FXML private Label pvAmount, pvTotal, feeWarn, overrideHint;
+    @FXML private TextField feeField, commField;
+    @FXML private Button saveBtn, clearBtn;
+
+    private boolean canOverride;   // owner only
+    private boolean syncing;       // guard to avoid listener loops when we set fields programmatically
+    private long computedFee, computedComm;
+
+    @FXML
+    public void initialize() {
+        int branch = Session.branchId();
+        canOverride = "owner".equals(Session.user().role());
+
+        typeBox.setItems(FXCollections.observableArrayList(TxnTypeRepo.listForBranch(branch)));
+        accountBox.setItems(FXCollections.observableArrayList(AccountRepo.listForBranch(branch)));
+        toAccountBox.setItems(FXCollections.observableArrayList(AccountRepo.digitalForBranch(branch)));
+
+        typeBox.valueProperty().addListener((o, a, b) -> { updateToAccountVisibility(); recompute(); });
+        accountBox.valueProperty().addListener((o, a, b) -> recompute());
+        amount.textProperty().addListener((o, a, b) -> recompute());
+
+        // fee/commission editable only for owner
+        feeField.setEditable(canOverride);
+        commField.setEditable(canOverride);
+        feeField.setDisable(!canOverride);
+        commField.setDisable(!canOverride);
+        if (canOverride) {
+            feeField.textProperty().addListener((o, a, b) -> onFeeEdited());
+            commField.textProperty().addListener((o, a, b) -> onFeeEdited());
+        }
+
+        saveBtn.setDisable(false);
+        saveBtn.setOnAction(e -> onSave());
+        clearBtn.setOnAction(e -> onClear());
+
+        if (!typeBox.getItems().isEmpty()) typeBox.getSelectionModel().selectFirst();
+        accountBox.getItems().stream().filter(Account::isDigital).findFirst()
+                .ifPresent(accountBox.getSelectionModel()::select);
+        recompute();
+    }
+
+    private void updateToAccountVisibility() {
+        TxnType t = typeBox.getValue();
+        boolean walletToWallet = t != null && TxnType.WALLET_TO_WALLET.equals(t.name());
+        toAccountRow.setVisible(walletToWallet);
+        toAccountRow.setManaged(walletToWallet);
+    }
+
+    /** Recompute the rule-based fee, refill the (owner-editable) fields, show warning if no rule. */
+    private void recompute() {
+        long amt = Money.parse(amount.getText());
+        Account acc = accountBox.getValue();
+        String platform = (acc != null) ? acc.platform() : null;
+
+        TxnType t = typeBox.getValue();
+        String typeName = (t != null) ? t.name() : null;
+        FeeResult fr = FeeService.compute(Session.branchId(), typeName, platform, amt);
+        computedFee = fr.feePya();
+        computedComm = fr.commissionPya();
+
+        pvAmount.setText(Fmt.kyat(amt));
+
+        // refill fee/comm fields with the computed values (this is the auto default)
+        syncing = true;
+        feeField.setText(Money.format(computedFee));
+        commField.setText(Money.format(computedComm));
+        syncing = false;
+
+        // warning: digital account whose platform has no fee rule
+        boolean digital = acc != null && acc.isDigital();
+        boolean noFee = digital && computedFee == 0;
+        feeWarn.setText(noFee ? I18n.t("txn.noFeeRuleWarn") : "");
+        feeWarn.setVisible(noFee); feeWarn.setManaged(noFee);
+        overrideHint.setVisible(false); overrideHint.setManaged(false);
+        updateTotal();
+    }
+
+    /** Owner edited a fee/commission field manually. */
+    private void onFeeEdited() {
+        if (syncing) return;   // ignore our own programmatic refills
+        boolean overridden = currentFee() != computedFee || currentComm() != computedComm;
+        overrideHint.setText(overridden ? I18n.t("txn.overrideHint") : "");
+        overrideHint.setVisible(overridden); overrideHint.setManaged(overridden);
+        updateTotal();
+    }
+
+    private long currentFee() { return Money.parse(feeField.getText()); }
+    private long currentComm() { return Money.parse(commField.getText()); }
+
+    private void updateTotal() {
+        long amt = Money.parse(amount.getText());
+        pvTotal.setText(Fmt.kyat(amt + currentFee()));
+    }
+
+    private void onSave() {
+        try {
+            long amt = Money.parse(amount.getText());
+            Account acc = accountBox.getValue();
+
+            long fee = canOverride ? currentFee() : computedFee;
+            long comm = canOverride ? currentComm() : computedComm;
+            boolean overridden = canOverride && (fee != computedFee || comm != computedComm);
+
+            PostingRequest r = new PostingRequest();
+            r.type = typeBox.getValue();
+            r.account = acc;
+            r.toAccount = toAccountBox.getValue();
+            r.amountPya = amt;
+            r.feePya = fee;
+            r.commissionPya = comm;
+            r.feeOverridden = overridden;
+            r.senderPhone = senderPhone.getText();
+            r.receiverPhone = receiverPhone.getText();
+            r.refNo = refNo.getText();
+            r.note = note.getText();
+
+            long id = LedgerService.post(r);
+            info(I18n.t("txn.success", id));
+            onClear();
+        } catch (Exception ex) {
+            error(ex.getMessage() == null ? ex.toString() : ex.getMessage());
+        }
+    }
+
+    private void info(String msg) {
+        Alert a = new Alert(Alert.AlertType.INFORMATION, msg, ButtonType.OK);
+        a.setHeaderText(null); a.showAndWait();
+    }
+
+    private void error(String msg) {
+        Alert a = new Alert(Alert.AlertType.ERROR, msg, ButtonType.OK);
+        a.setHeaderText(null); a.showAndWait();
+    }
+
+    @FXML
+    private void onClear() {
+        senderPhone.clear(); receiverPhone.clear(); amount.clear(); refNo.clear(); note.clear();
+        recompute();
+    }
+}

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.agentledger.ui.login.LoginController"
+           style="-fx-background-color:#eef1f0;">
+    <VBox spacing="12" alignment="CENTER" maxWidth="320"
+          style="-fx-background-color:white;-fx-background-radius:14;-fx-border-radius:14;-fx-border-color:#e5e9e7;-fx-padding:32;">
+        <Label text="AgentLedger" style="-fx-font-size:20px;-fx-font-weight:bold;-fx-text-fill:#0C3B3C;"/>
+        <Label fx:id="branchLabel" style="-fx-text-fill:#5C6967;"/>
+        <TextField fx:id="username" promptText="%login.username" prefWidth="256"/>
+        <StackPane prefWidth="256">
+            <PasswordField fx:id="password" promptText="%login.password"/>
+            <TextField fx:id="passwordVisible" promptText="%login.password" visible="false" managed="false"/>
+        </StackPane>
+        <CheckBox fx:id="showPassword" text="%login.showPassword" style="-fx-font-size:12px;"/>
+        <Label fx:id="error" wrapText="true" style="-fx-text-fill:#A8312B;-fx-font-size:12px;"/>
+        <Button text="%login.btn.signin" onAction="#onLogin" prefWidth="256" prefHeight="38"
+                style="-fx-background-color:#0E7C7B;-fx-text-fill:white;-fx-font-weight:bold;"/>
+        <Hyperlink text="%login.back" onAction="#onBack"/><Hyperlink text="%login.forgot" onAction="#onForgot"/>
+    </VBox>
+</StackPane>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<StackPane xmlns="http://javafx.com/javafx">
+    <Label text="%users.title" style="-fx-text-fill:#5C6967;-fx-padding:30;"/>
+</StackPane>

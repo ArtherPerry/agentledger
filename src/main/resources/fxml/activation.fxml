@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.agentledger.ui.license.ActivationController"
+           style="-fx-background-color:#eef1f0;">
+    <VBox maxWidth="460" spacing="16" alignment="CENTER_LEFT"
+          style="-fx-background-color:white;-fx-background-radius:14;-fx-padding:32;-fx-border-color:#e5e9e7;-fx-border-radius:14;">
+
+        <Label text="%license.title" style="-fx-font-size:20px;-fx-font-weight:bold;-fx-text-fill:#0C3B3C;"/>
+        <Label text="%license.instruction" wrapText="true" style="-fx-text-fill:#5C6967;-fx-font-size:13px;"/>
+
+        <VBox spacing="6">
+            <Label text="%license.deviceId" style="-fx-font-size:12px;-fx-text-fill:#5C6967;"/>
+            <HBox spacing="8">
+                <TextField fx:id="deviceIdField" editable="false" HBox.hgrow="ALWAYS"
+                           style="-fx-font-size:15px;-fx-font-family:monospace;"/>
+                <Button fx:id="copyBtn" text="%license.copy" onAction="#onCopy"/>
+            </HBox>
+        </VBox>
+
+        <VBox spacing="6">
+            <Label text="%license.keyPrompt" style="-fx-font-size:12px;-fx-text-fill:#5C6967;"/>
+            <TextField fx:id="keyField" promptText="%license.keyPrompt"/>
+        </VBox>
+
+        <Label fx:id="message" wrapText="true" visible="false" managed="false" style="-fx-font-size:12px;"/>
+
+        <Button fx:id="activateBtn" text="%license.activate" onAction="#onActivate"
+                maxWidth="Infinity"
+                style="-fx-background-color:#0E7C7B;-fx-text-fill:white;-fx-font-weight:bold;-fx-padding:12;"/>
+    </VBox>
+</StackPane>

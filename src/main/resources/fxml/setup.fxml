@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.agentledger.ui.setup.SetupController"
+           style="-fx-background-color:#eef1f0;">
+    <VBox maxWidth="420" spacing="14" alignment="CENTER_LEFT"
+          style="-fx-background-color:white;-fx-background-radius:14;-fx-padding:32;-fx-border-color:#e5e9e7;-fx-border-radius:14;">
+        <Label text="%setup.title" style="-fx-font-size:20px;-fx-font-weight:bold;-fx-text-fill:#0C3B3C;"/>
+        <Label text="%setup.intro" wrapText="true" style="-fx-text-fill:#5C6967;-fx-font-size:13px;"/>
+
+        <Label text="%setup.shopName" style="-fx-font-size:12px;-fx-text-fill:#5C6967;"/>
+        <TextField fx:id="shopName"/>
+        <Label text="%setup.ownerName" style="-fx-font-size:12px;-fx-text-fill:#5C6967;"/>
+        <TextField fx:id="ownerName"/>
+        <Label text="%setup.username" style="-fx-font-size:12px;-fx-text-fill:#5C6967;"/>
+        <TextField fx:id="username"/>
+        <Label text="%setup.password" style="-fx-font-size:12px;-fx-text-fill:#5C6967;"/>
+        <PasswordField fx:id="password"/>
+        <Label text="%setup.passwordConfirm" style="-fx-font-size:12px;-fx-text-fill:#5C6967;"/>
+        <PasswordField fx:id="passwordConfirm"/>
+
+        <Label fx:id="message" wrapText="true" visible="false" managed="false"
+               style="-fx-font-size:12px;-fx-text-fill:#791F1F;"/>
+
+        <Button fx:id="createBtn" text="%setup.create" onAction="#onCreate"
+                maxWidth="Infinity"
+                style="-fx-background-color:#0E7C7B;-fx-text-fill:white;-fx-font-weight:bold;-fx-padding:12;"/>
+    </VBox>
+</StackPane>

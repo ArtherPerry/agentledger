@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.agentledger.ui.settings.UsersController"
+      spacing="12" style="-fx-background-color:white;-fx-background-radius:12;-fx-border-color:#e5e9e7;-fx-border-radius:12;">
+    <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+
+    <HBox alignment="CENTER_LEFT">
+        <Label text="%users.title" style="-fx-font-weight:bold;-fx-text-fill:#0C3B3C;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="addBtn" text="%users.btn.add" onAction="#onAdd"
+                style="-fx-background-color:#0E7C7B;-fx-text-fill:white;-fx-font-weight:bold;"/>
+    </HBox>
+    <Label fx:id="hint" wrapText="true" style="-fx-font-size:11px;-fx-text-fill:#5C6967;"/>
+
+    <TableView fx:id="table" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colName" text="%col.name" prefWidth="160"/>
+            <TableColumn fx:id="colUser" text="Username" prefWidth="150"/>
+            <TableColumn fx:id="colRole" text="%users.col.role" prefWidth="120"/>
+            <TableColumn fx:id="colActive" text="%col.status" prefWidth="100"/>
+            <TableColumn fx:id="colAction" text="" prefWidth="90"/>
+        </columns>
+    </TableView>
+</VBox>

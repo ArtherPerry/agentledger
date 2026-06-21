@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.agentledger.ui.branch.BranchController"
+           style="-fx-background-color:#eef1f0;">
+    <VBox spacing="14" alignment="CENTER" maxWidth="520">
+        <Label text="AgentLedger" style="-fx-font-size:22px;-fx-font-weight:bold;-fx-text-fill:#0C3B3C;"/>
+        <Label text="%branch.choose" style="-fx-font-size:14px;-fx-text-fill:#5C6967;"/>
+        <VBox fx:id="branchBox" spacing="10" alignment="CENTER"/>
+    </VBox>
+</StackPane>
