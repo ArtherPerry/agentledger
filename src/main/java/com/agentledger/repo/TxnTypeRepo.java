@@ -194,4 +194,19 @@ public final class TxnTypeRepo {
         } catch (Exception e) { com.agentledger.utils.Log.error(e); }
         return 0;
     }
+    /** Map a canonical type name to its current display name (for showing in other screens). */
+    public static String displayNameFor(int branchId, String canonicalName) {
+        try {
+            Connection c = Database.get();
+            try (PreparedStatement ps = c.prepareStatement(
+                    "SELECT display_name FROM txn_types WHERE branch_id=? AND name=?")) {
+                ps.setInt(1, branchId);
+                ps.setString(2, canonicalName);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) { String d = rs.getString(1); return d != null ? d : canonicalName; }
+                }
+            }
+        } catch (Exception e) { com.agentledger.utils.Log.error(e); }
+        return canonicalName;
+    }
 }

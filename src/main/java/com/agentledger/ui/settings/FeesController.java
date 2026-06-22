@@ -22,7 +22,8 @@ public class FeesController {
 
     @FXML
     public void initialize() {
-        colType.setCellValueFactory(d -> str(d.getValue().typeName()));
+        colType.setCellValueFactory(d -> str(
+                com.agentledger.repo.TxnTypeRepo.displayNameFor(Session.branchId(), d.getValue().typeName())));
         colPlatform.setCellValueFactory(d -> str(d.getValue().platform()));
         colMin.setCellValueFactory(d -> str(Money.format(d.getValue().minAmountPya())));
         colMax.setCellValueFactory(d -> str(d.getValue().maxAmountPya() == null ? "—" : Money.format(d.getValue().maxAmountPya())));
@@ -77,10 +78,32 @@ public class FeesController {
         dlg.getDialogPane().getButtonTypes().addAll(ok, ButtonType.CANCEL);
 
         ComboBox<String> type = new ComboBox<>();
-        type.getItems().addAll(FeeRuleRepo.feeBearingTypes());
-        type.setValue(rule == null ? FeeRuleRepo.feeBearingTypes().get(0) : rule.typeName());
+        java.util.List<String> canonicalTypes = FeeRuleRepo.feeBearingTypes(Session.branchId());
+        type.getItems().addAll(canonicalTypes);
+        // show display names, store canonical names
+        type.setCellFactory(cb -> new javafx.scene.control.ListCell<>() {
+            @Override protected void updateItem(String canon, boolean empty) {
+                super.updateItem(canon, empty);
+                setText(empty || canon == null ? null
+                        : com.agentledger.repo.TxnTypeRepo.displayNameFor(Session.branchId(), canon));
+            }
+        });
+        type.setButtonCell(new javafx.scene.control.ListCell<>() {
+            @Override protected void updateItem(String canon, boolean empty) {
+                super.updateItem(canon, empty);
+                setText(empty || canon == null ? null
+                        : com.agentledger.repo.TxnTypeRepo.displayNameFor(Session.branchId(), canon));
+            }
+        });
+        type.setValue(rule == null ? (canonicalTypes.isEmpty() ? null : canonicalTypes.get(0)) : rule.typeName());
 
-        TextField platform = new TextField(rule == null ? "" : rule.platform());
+        // Platform: editable dropdown of existing/known platforms (prevents typo mismatches
+        // with account platforms, which would silently stop fees from applying).
+        ComboBox<String> platform = new ComboBox<>();
+        platform.setEditable(true);
+        platform.getItems().addAll(com.agentledger.repo.AccountRepo.platformSuggestions(Session.branchId()));
+        if (rule != null) platform.setValue(rule.platform());
+
         TextField min = new TextField(rule == null ? "0" : Money.format(rule.minAmountPya()));
         TextField max = new TextField(rule == null || rule.maxAmountPya() == null ? "" : Money.format(rule.maxAmountPya()));
         TextField fee = new TextField(rule == null ? "0.5" : String.valueOf(rule.feePct()));
@@ -101,11 +124,13 @@ public class FeesController {
         dlg.setResultConverter(bt -> {
             if (bt == ok) {
                 try {
+                    String plat = platform.getValue() == null ? "" : platform.getValue().trim();
                     Long maxPya = max.getText().isBlank() ? null : Money.parse(max.getText());
+                    if (maxPya != null && maxPya <= 0) maxPya = null;   // 0 or blank = no upper limit
                     FeeRule r = new FeeRule(
                             rule == null ? 0 : rule.id(),
                             type.getValue(),
-                            platform.getText().trim(),
+                            plat,
                             Money.parse(min.getText()),
                             maxPya,
                             Double.parseDouble(fee.getText().trim()),
@@ -113,6 +138,7 @@ public class FeesController {
                             Double.parseDouble(comm.getText().trim()),
                             true);
                     if (r.platform().isBlank()) throw new IllegalArgumentException(I18n.t("fees.err.platformRequired"));
+                    if (type.getValue() == null) throw new IllegalArgumentException(I18n.t("fees.err.platformRequired"));
                     if (rule == null) FeeRuleRepo.insert(Session.branchId(), r);
                     else FeeRuleRepo.update(r);
                     load();

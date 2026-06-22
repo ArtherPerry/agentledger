@@ -75,7 +75,22 @@ public class TxnController {
 
         TxnType t = typeBox.getValue();
         String typeName = (t != null) ? t.name() : null;
-        FeeResult fr = FeeService.compute(Session.branchId(), typeName, platform, amt);
+        FeeResult fr;
+        try {
+            fr = FeeService.compute(Session.branchId(), typeName, platform, amt);
+        } catch (FeeService.FeeLookupException ex) {
+            // DB error computing the fee — make it visible and block a misleading zero.
+            computedFee = 0; computedComm = 0;
+            syncing = true;
+            feeField.setText(Money.format(0));
+            commField.setText(Money.format(0));
+            syncing = false;
+            feeWarn.setText(I18n.t("txn.feeError"));
+            feeWarn.setVisible(true); feeWarn.setManaged(true);
+            pvAmount.setText(Fmt.kyat(amt));
+            updateTotal();
+            return;
+        }
         computedFee = fr.feePya();
         computedComm = fr.commissionPya();
 
@@ -88,10 +103,11 @@ public class TxnController {
         syncing = false;
 
         // warning: digital account whose platform has no fee rule
+        // warning: digital account + this type/platform has NO fee rule at all
         boolean digital = acc != null && acc.isDigital();
-        boolean noFee = digital && computedFee == 0;
-        feeWarn.setText(noFee ? I18n.t("txn.noFeeRuleWarn") : "");
-        feeWarn.setVisible(noFee); feeWarn.setManaged(noFee);
+        boolean noRule = digital && !FeeService.hasRule(Session.branchId(), typeName, platform);
+        feeWarn.setText(noRule ? I18n.t("txn.noFeeRuleWarn") : "");
+        feeWarn.setVisible(noRule); feeWarn.setManaged(noRule);
         overrideHint.setVisible(false); overrideHint.setManaged(false);
         updateTotal();
     }

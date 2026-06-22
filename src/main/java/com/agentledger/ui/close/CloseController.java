@@ -31,7 +31,12 @@ public class CloseController {
 
     @FXML
     public void initialize() {
-        closed = DailyCloseRepo.isTodayClosed(Session.branchId());
+        try {
+            closed = DailyCloseRepo.isTodayClosed(Session.branchId());
+        } catch (Exception ex) {
+            com.agentledger.utils.Log.error(ex);
+            closed = true;   // fail safe: can't verify -> treat as closed so the close action is blocked
+        }
         buildGrid();
         applyState();
         recompute();
@@ -48,17 +53,25 @@ public class CloseController {
 
         int row = 1;
         for (Account a : AccountRepo.listForBranch(Session.branchId())) {
-            long expected = a.isDigital()
-                    ? LedgerRepo.accountDigitalPya(a.id())
-                    : LedgerRepo.branchCashPya(Session.branchId());
-
+            long expected;
+            try {
+                expected = a.isDigital()
+                        ? LedgerRepo.accountDigitalPya(a.id())
+                        : LedgerRepo.branchCashPya(Session.branchId());
+            } catch (Exception ex) {
+                com.agentledger.utils.Log.error(ex);
+                // Can't read a real balance — do NOT let the user close against bad data.
+                closed = true;                 // reuse closed-state to disable the close button
+                applyState();
+                new Alert(Alert.AlertType.ERROR, I18n.t("close.err.balanceUnavailable"), ButtonType.OK)
+                        .showAndWait();
+                return;                        // abort building the grid
+            }
             TextField actual = new TextField(stripDecimals(expected));
             actual.setDisable(closed);
             actual.textProperty().addListener((o, x, y) -> recompute());
-
             Label diff = new Label(Money.format(0));
             diff.setId("diff" + a.id());
-
             grid.add(new Label(a.name()), 0, row);
             grid.add(new Label(Money.format(expected)), 1, row);
             grid.add(actual, 2, row);

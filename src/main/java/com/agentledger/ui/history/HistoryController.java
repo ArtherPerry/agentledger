@@ -40,12 +40,18 @@ public class HistoryController {
 
     private void load() {
         table.setItems(FXCollections.observableArrayList(LedgerRepo.recent(Session.branchId(), 200)));
-        long cash = LedgerRepo.branchCashPya(Session.branchId());
-        long digital = 0;
-        for (Account a : AccountRepo.digitalForBranch(Session.branchId()))
-            digital += LedgerRepo.accountDigitalPya(a.id());
-        cashLabel.setText(Fmt.kyat(cash));
-        digitalLabel.setText(Fmt.kyat(digital));
+        try {
+            long cash = LedgerRepo.branchCashPya(Session.branchId());
+            long digital = 0;
+            for (Account a : AccountRepo.digitalForBranch(Session.branchId()))
+                digital += LedgerRepo.accountDigitalPya(a.id());
+            cashLabel.setText(Fmt.kyat(cash));
+            digitalLabel.setText(Fmt.kyat(digital));
+        } catch (Exception ex) {
+            com.agentledger.utils.Log.error(ex);
+            cashLabel.setText("—");
+            digitalLabel.setText("—");
+        }
     }
 
     private String statusText(LedgerRow r) {

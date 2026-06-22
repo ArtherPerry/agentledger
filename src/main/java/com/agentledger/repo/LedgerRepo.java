@@ -61,7 +61,10 @@ public final class LedgerRepo {
                 ps.setInt(1, id);
                 try (ResultSet rs = ps.executeQuery()) { return rs.next() ? rs.getLong(1) : 0L; }
             }
-        } catch (Exception e) { com.agentledger.utils.Log.error(e); return 0L; }
+        } catch (Exception e) {
+            com.agentledger.utils.Log.error(e);
+            throw new IllegalStateException("Balance query failed", e);
+        }
     }
 
     /** Today's activity for the branch (count of postings, net fees, net commission). */

@@ -7,7 +7,9 @@ import java.sql.*;
 public final class DailyCloseRepo {
     private DailyCloseRepo() {}
 
-    /** True if today's close exists and is 'closed' for this branch. */
+    /** True if today's close exists and is 'closed' for this branch.
+     *  Throws on a real DB error rather than returning false — a DB hiccup must NOT
+     *  be read as "day is open", which would let entries slip into a closed day. */
     public static boolean isTodayClosed(int branchId) {
         String sql = "SELECT 1 FROM daily_closes WHERE branch_id=? " +
                 "AND business_date=date('now','localtime') AND status='closed'";
@@ -17,7 +19,10 @@ public final class DailyCloseRepo {
                 ps.setInt(1, branchId);
                 try (ResultSet rs = ps.executeQuery()) { return rs.next(); }
             }
-        } catch (Exception e) { com.agentledger.utils.Log.error(e); return false; }
+        } catch (Exception e) {
+            com.agentledger.utils.Log.error(e);
+            throw new IllegalStateException("Cannot verify daily close status", e);
+        }
     }
     /** Expected cash for the branch (sum of cash deltas) in pya. */
     public static long expectedCash(int branchId) {

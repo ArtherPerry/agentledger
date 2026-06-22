@@ -42,22 +42,63 @@ public final class BackupService {
 
     /**
      * Restore: replace the live DB with the chosen file.
-     * The app must reconnect afterwards, so we signal the caller to restart.
+     * Safety order: verify the source's SHA-256 (if known) BEFORE touching the live DB;
+     * keep a .pre-restore copy of the current live DB so it is always recoverable.
+     * The app must reconnect afterwards, so the caller should restart.
      */
     public static void restoreFrom(File source) throws Exception {
         if (!Permissions.canBackup()) throw new IllegalStateException(I18n.t("error.noPermission"));
         if (!source.exists()) throw new IllegalStateException(I18n.t("error.fileNotFound"));
 
-        // sanity: must be a readable SQLite file we can open with our key
-        // (a quick check happens on next launch; here we just swap the file)
+        // 1) VERIFY FIRST — before we close or overwrite anything.
+        // If we recorded a SHA-256 for this backup file, the file on disk must still match it.
+        String expected = storedSha256For(source.getAbsolutePath());
+        if (expected != null) {
+            String actual = sha256(source.toPath());
+            if (!expected.equalsIgnoreCase(actual)) {
+                throw new IllegalStateException(I18n.t("backup.err.corrupt"));   // refuse; live DB untouched
+            }
+        }
+
+        // 2) Now it's safe to take the live DB offline.
         Database.checkpoint();
-        Database.closePublic();                      // close the live connection
+        Database.closePublic();
 
         Path live = Database.dbFilePath();
-        // remove WAL/SHM so the restored file isn't mixed with old WAL
+
+        // 3) SAFETY NET: copy the current live DB aside before we overwrite it, so a
+        //    failure (or a bad source we couldn't verify) is always recoverable.
+        if (Files.exists(live)) {
+            String stamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
+            Path safety = live.resolveSibling(live.getFileName() + ".pre-restore-" + stamp + ".bak");
+            Files.copy(live, safety, StandardCopyOption.REPLACE_EXISTING);
+            com.agentledger.utils.Log.info("[RESTORE] pre-restore safety copy: " + safety);
+        }
+
+        // 4) Remove WAL/SHM so the restored file isn't shadowed by stale WAL.
         Files.deleteIfExists(Path.of(live.toString() + "-wal"));
         Files.deleteIfExists(Path.of(live.toString() + "-shm"));
+
+        // 5) Swap in the chosen backup.
         Files.copy(source.toPath(), live, StandardCopyOption.REPLACE_EXISTING);
+        com.agentledger.utils.Log.info("[RESTORE] restored live DB from " + source.getAbsolutePath());
+    }
+
+    /** The SHA-256 we recorded for a backup at this absolute path, or null if we have no record. */
+    private static String storedSha256For(String absolutePath) {
+        String sql = "SELECT sha256 FROM backups WHERE location=? ORDER BY id DESC LIMIT 1";
+        try {
+            Connection c = Database.get();
+            try (PreparedStatement ps = c.prepareStatement(sql)) {
+                ps.setString(1, absolutePath);
+                try (ResultSet rs = ps.executeQuery()) {
+                    return rs.next() ? rs.getString(1) : null;
+                }
+            }
+        } catch (Exception e) {
+            com.agentledger.utils.Log.error(e);
+            return null;   // no record available -> we'll still keep the pre-restore safety copy
+        }
     }
 
     public static List<com.agentledger.model.BackupRow> history(int limit) {

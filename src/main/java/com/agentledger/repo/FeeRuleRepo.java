@@ -73,20 +73,23 @@ public final class FeeRuleRepo {
         }
     }
 
-    /** The transaction types that can have fees (excludes internal top-up/repay types). */
-    public static List<String> feeBearingTypes() {
-        // user-facing, fee-capable types
-        List<String> internal = Arrays.asList(TxnType_INTERNAL());
-        List<String> all = Arrays.asList(
-                com.agentledger.model.TxnType.PASSWORD_WITHDRAW,
-                com.agentledger.model.TxnType.PASSWORD_TRANSFER,
-                com.agentledger.model.TxnType.WALLET_TO_WALLET,
-                com.agentledger.model.TxnType.ACCOUNT_WITHDRAW,
-                com.agentledger.model.TxnType.CASH_TO_ACCOUNT);
+    /** Active types (for a branch) that can bear a platform fee — i.e. have a digital leg.
+     *  Returns canonical names (fee rules match on the canonical name). Includes custom types. */
+    public static List<String> feeBearingTypes(int branchId) {
         List<String> out = new ArrayList<>();
-        for (String t : all) if (!internal.contains(t)) out.add(t);
+        String sql = "SELECT name FROM txn_types WHERE branch_id=? AND active=1 " +
+                "AND digital_effect IN ('in','out') " +
+                "AND name NOT IN (" + com.agentledger.model.TxnType.internalSqlList() + ") " +
+                "ORDER BY sort_order, id";
+        try {
+            Connection c = Database.get();
+            try (PreparedStatement ps = c.prepareStatement(sql)) {
+                ps.setInt(1, branchId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) out.add(rs.getString(1));
+                }
+            }
+        } catch (Exception e) { com.agentledger.utils.Log.error(e); }
         return out;
     }
-
-    private static String[] TxnType_INTERNAL() { return com.agentledger.model.TxnType.INTERNAL; }
 }

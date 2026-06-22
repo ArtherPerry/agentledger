@@ -44,9 +44,15 @@ public class AccountsController {
     }
 
     private void load() {
-        table.setItems(FXCollections.observableArrayList(AccountRepo.balancesForBranch(Session.branchId())));
-        cashTotal.setText(Fmt.kyat(LedgerRepo.branchCashPya(Session.branchId())));
-        digitalTotal.setText(Fmt.kyat(LedgerRepo.branchDigitalTotalPya(Session.branchId())));
+        try {
+            table.setItems(FXCollections.observableArrayList(AccountRepo.balancesForBranch(Session.branchId())));
+            cashTotal.setText(Fmt.kyat(LedgerRepo.branchCashPya(Session.branchId())));
+            digitalTotal.setText(Fmt.kyat(LedgerRepo.branchDigitalTotalPya(Session.branchId())));
+        } catch (Exception ex) {
+            com.agentledger.utils.Log.error(ex);
+            cashTotal.setText("—");
+            digitalTotal.setText("—");
+        }
     }
 
     private void addActionColumn() {

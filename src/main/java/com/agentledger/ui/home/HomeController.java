@@ -31,10 +31,23 @@ public class HomeController {
         statCount.setText(String.valueOf(st.count()));
         statFee.setText(Fmt.kyat(st.feePya()));
         statComm.setText(Fmt.kyat(st.commissionPya()));
-        statCash.setText(Fmt.kyat(LedgerRepo.branchCashPya(branch)));
-        statDigital.setText(Fmt.kyat(LedgerRepo.branchDigitalTotalPya(branch)));
+        try {
+            statCash.setText(Fmt.kyat(LedgerRepo.branchCashPya(branch)));
+            statDigital.setText(Fmt.kyat(LedgerRepo.branchDigitalTotalPya(branch)));
+        } catch (Exception ex) {
+            com.agentledger.utils.Log.error(ex);
+            statCash.setText("—");
+            statDigital.setText("—");
+        }
 
-        boolean closed = DailyCloseRepo.isTodayClosed(branch);
+        boolean closed;
+        try {
+            closed = DailyCloseRepo.isTodayClosed(branch);
+        } catch (Exception ex) {
+            com.agentledger.utils.Log.error(ex);
+            closed = false;   // display fallback only; the posting guard fails safe separately
+            // optionally show a small "status unavailable" note instead of the banner
+        }
         closeBanner.setVisible(!closed);
         closeBanner.setManaged(!closed);
 
