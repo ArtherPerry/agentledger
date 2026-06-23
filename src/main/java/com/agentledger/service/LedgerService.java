@@ -67,6 +67,11 @@ public final class LedgerService {
         long digitalDelta = delta(r.type.digitalEffect(), r.amountPya);
 
         int branch = Session.branchId();
+        // Negative-balance policy: BLOCK enforces here; WARN/ALLOW defer to the caller/UI.
+        if (BalancePolicy.of(branch) == BalancePolicy.BLOCK) {
+            Shortfall sf = projectedShortfall(r);
+            if (sf != null) throw new IllegalStateException(sf.message());
+        }
         int userId = Session.user().id();
         String now = LocalDateTime.now().format(TS);
 
@@ -244,6 +249,43 @@ public final class LedgerService {
         return post(r);   // reuses the same one-transaction posting path
     }
 
+    /** Describes a balance that a posting would drive negative. */
+    public record Shortfall(boolean cash, String accountName, long currentPya, long deficitPya) {
+        /** Hard-stop message for BLOCK mode. */
+        public String message() {
+            return cash
+                    ? I18n.t("error.balanceBlocked.cash", Money.format(currentPya), Money.format(deficitPya))
+                    : I18n.t("error.balanceBlocked.digital", accountName, Money.format(currentPya), Money.format(deficitPya));
+        }
+        /** Confirm-prompt message for WARN mode (controller use). */
+        public String warnMessage() {
+            return cash
+                    ? I18n.t("warn.balanceNegative.cash", Money.format(currentPya))
+                    : I18n.t("warn.balanceNegative.digital", accountName, Money.format(currentPya));
+        }
+    }
+
+    /**
+     * Pure read: if posting r would drive an affected balance negative, returns a Shortfall;
+     * else null. Covers the digital wallet (incl. the wallet-to-wallet SOURCE leg) and branch cash.
+     */
+    public static Shortfall projectedShortfall(PostingRequest r) {
+        if (r == null || r.type == null || r.account == null || r.amountPya <= 0) return null;
+
+        long digitalDelta = delta(r.type.digitalEffect(), r.amountPya);
+        if (digitalDelta < 0) {
+            long cur = com.agentledger.repo.LedgerRepo.accountDigitalPya(r.account.id());
+            if (cur + digitalDelta < 0)
+                return new Shortfall(false, r.account.name(), cur, -(cur + digitalDelta));
+        }
+        long cashDelta = delta(r.type.cashEffect(), r.amountPya);
+        if (cashDelta < 0) {
+            long cur = com.agentledger.repo.LedgerRepo.branchCashPya(Session.branchId());
+            if (cur + cashDelta < 0)
+                return new Shortfall(true, null, cur, -(cur + cashDelta));
+        }
+        return null;
+    }
     private static void setOrNull(PreparedStatement ps, int idx, String v) throws SQLException {
         if (v == null || v.isBlank()) ps.setNull(idx, Types.VARCHAR);
         else ps.setString(idx, v.trim());

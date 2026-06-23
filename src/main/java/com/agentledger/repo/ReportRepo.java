@@ -16,7 +16,7 @@ public final class ReportRepo {
             " AND t.name NOT IN (" + TxnType.internalSqlList() + ") ";
 
     public static ReportSummary summary(int branchId, String from, String to) {
-        String sql = "SELECT COUNT(CASE WHEN e.reverses_id IS NULL AND (e.to_account_id IS NULL OR e.digital_delta_pya <= 0) THEN 1 END), " +
+        String sql = "SELECT COUNT(CASE WHEN e.reverses_id IS NULL AND NOT EXISTS (SELECT 1 FROM ledger_entries rv WHERE rv.reverses_id = e.id) AND (e.to_account_id IS NULL OR e.digital_delta_pya <= 0) THEN 1 END), " +
                 "COALESCE(SUM(e.amount_pya),0), COALESCE(SUM(e.fee_pya),0), COALESCE(SUM(e.commission_pya),0) " +
                 "FROM ledger_entries e JOIN txn_types t ON t.id=e.type_id " +
                 "WHERE e.branch_id=? AND date(e.created_at) BETWEEN ? AND ?" + EXCLUDE;
@@ -36,7 +36,7 @@ public final class ReportRepo {
     public static List<PlatformRow> byPlatform(int branchId, String from, String to) {
         List<PlatformRow> out = new ArrayList<>();
         String sql = "SELECT COALESCE(a.platform,'(ငွေသား)') AS platform, " +
-                "COUNT(CASE WHEN e.reverses_id IS NULL AND (e.to_account_id IS NULL OR e.digital_delta_pya <= 0) THEN 1 END), " +
+                "COUNT(CASE WHEN e.reverses_id IS NULL AND NOT EXISTS (SELECT 1 FROM ledger_entries rv WHERE rv.reverses_id = e.id) AND (e.to_account_id IS NULL OR e.digital_delta_pya <= 0) THEN 1 END), " +
                 "COALESCE(SUM(e.amount_pya),0), COALESCE(SUM(e.commission_pya),0) " +
                 "FROM ledger_entries e JOIN txn_types t ON t.id=e.type_id " +
                 "LEFT JOIN accounts a ON a.id=e.account_id " +
