@@ -164,34 +164,55 @@ public final class LedgerService {
             String now = java.time.LocalDateTime.now()
                     .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
+            // Phase 1: read all legs into memory, THEN close the cursor before writing.
+            // Writing inside an open ResultSet on the same single SQLite connection spins
+            // during generated-keys retrieval — this was the wallet-to-wallet reverse hang.
+            java.util.List<Object[]> rows = new java.util.ArrayList<>();
             try (PreparedStatement ld = c.prepareStatement(load)) {
                 ld.setLong(1, entryId); ld.setLong(2, entryId);
                 ld.setLong(3, entryId); ld.setLong(4, entryId);
-                try (ResultSet rs = ld.executeQuery();
-                     PreparedStatement ins = c.prepareStatement(insert)) {
-                    int count = 0;
+                try (ResultSet rs = ld.executeQuery()) {
                     while (rs.next()) {
-                        ins.setInt(1, rs.getInt("branch_id"));
-                        ins.setInt(2, rs.getInt("account_id"));
                         int toAcc = rs.getInt("to_account_id");
-                        if (rs.wasNull()) ins.setNull(3, java.sql.Types.INTEGER); else ins.setInt(3, toAcc);
-                        ins.setInt(4, rs.getInt("type_id"));
-                        ins.setLong(5, -rs.getLong("amount_pya"));
-                        ins.setLong(6, -rs.getLong("fee_pya"));
-                        ins.setLong(7, -rs.getLong("commission_pya"));
-                        ins.setLong(8, -rs.getLong("cash_delta_pya"));
-                        ins.setLong(9, -rs.getLong("digital_delta_pya"));
-                        ins.setNull(10, java.sql.Types.VARCHAR);
-                        ins.setNull(11, java.sql.Types.VARCHAR);
-                        ins.setString(12, rs.getString("ref_no"));
-                        ins.setString(13, "ပြန်ရုပ်သိမ်းချက် — #" + rs.getLong("id"));
-                        ins.setLong(14, rs.getLong("id"));   // reverses_id -> the row it cancels
-                        ins.setString(15, now);
-                        ins.setInt(16, userId);
-                        ins.executeUpdate();
-                        count++;
+                        boolean toAccNull = rs.wasNull();
+                        rows.add(new Object[]{
+                                rs.getInt("branch_id"),          // 0
+                                rs.getInt("account_id"),         // 1
+                                toAccNull ? null : toAcc,        // 2
+                                rs.getInt("type_id"),            // 3
+                                rs.getLong("amount_pya"),        // 4
+                                rs.getLong("fee_pya"),           // 5
+                                rs.getLong("commission_pya"),    // 6
+                                rs.getLong("cash_delta_pya"),    // 7
+                                rs.getLong("digital_delta_pya"), // 8
+                                rs.getString("ref_no"),          // 9
+                                rs.getLong("id")                 // 10
+                        });
                     }
-                    if (count == 0) throw new IllegalStateException(I18n.t("error.notFound"));
+                }
+            }
+            if (rows.isEmpty()) throw new IllegalStateException(I18n.t("error.notFound"));
+
+            // Phase 2: write the negated copies now that the read cursor is closed.
+            try (PreparedStatement ins = c.prepareStatement(insert)) {
+                for (Object[] row : rows) {
+                    ins.setInt(1, (int) row[0]);
+                    ins.setInt(2, (int) row[1]);
+                    if (row[2] == null) ins.setNull(3, java.sql.Types.INTEGER); else ins.setInt(3, (int) row[2]);
+                    ins.setInt(4, (int) row[3]);
+                    ins.setLong(5, -(long) row[4]);
+                    ins.setLong(6, -(long) row[5]);
+                    ins.setLong(7, -(long) row[6]);
+                    ins.setLong(8, -(long) row[7]);
+                    ins.setLong(9, -(long) row[8]);
+                    ins.setNull(10, java.sql.Types.VARCHAR);
+                    ins.setNull(11, java.sql.Types.VARCHAR);
+                    ins.setString(12, (String) row[9]);
+                    ins.setString(13, "ပြန်ရုပ်သိမ်းချက် — #" + (long) row[10]);
+                    ins.setLong(14, (long) row[10]);   // reverses_id -> the row it cancels
+                    ins.setString(15, now);
+                    ins.setInt(16, userId);
+                    ins.executeUpdate();
                 }
             }
 
