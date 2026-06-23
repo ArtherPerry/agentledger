@@ -151,6 +151,19 @@ public class TxnController {
             r.refNo = refNo.getText();
             r.note = note.getText();
 
+            // Negative-balance policy: WARN asks for confirmation before overdrawing.
+            // (BLOCK is enforced inside LedgerService.post and surfaces via the catch below;
+            //  ALLOW posts silently.)
+            if (BalancePolicy.of(Session.branchId()) == BalancePolicy.WARN) {
+                LedgerService.Shortfall sf = LedgerService.projectedShortfall(r);
+                if (sf != null) {
+                    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, sf.warnMessage(),
+                            ButtonType.YES, ButtonType.NO);
+                    confirm.setHeaderText(null);
+                    confirm.showAndWait();
+                    if (confirm.getResult() != ButtonType.YES) return;
+                }
+            }
             long id = LedgerService.post(r);
             info(I18n.t("txn.success", id));
             onClear();

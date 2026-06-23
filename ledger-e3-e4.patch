@@ -1,0 +1,140 @@
+diff --git a/src/main/java/com/agentledger/ui/settings/GeneralController.java b/src/main/java/com/agentledger/ui/settings/GeneralController.java
+new file mode 100644
+index 0000000..e7c8cf7
+--- /dev/null
++++ b/src/main/java/com/agentledger/ui/settings/GeneralController.java
+@@ -0,0 +1,56 @@
++package com.agentledger.ui.settings;
++
++import com.agentledger.i18n.I18n;
++import com.agentledger.repo.SettingsRepo;
++import com.agentledger.service.Session;
++import javafx.fxml.FXML;
++import javafx.scene.control.Label;
++import javafx.scene.control.RadioButton;
++import javafx.scene.control.Toggle;
++import javafx.scene.control.ToggleGroup;
++
++/** General branch settings. Currently: the negative-balance policy (Allow / Warn / Block). */
++public class GeneralController {
++
++    @FXML private RadioButton policyAllow, policyWarn, policyBlock;
++    @FXML private Label savedHint;
++
++    private final ToggleGroup policyGroup = new ToggleGroup();
++
++    @FXML
++    public void initialize() {
++        policyAllow.setToggleGroup(policyGroup);
++        policyWarn.setToggleGroup(policyGroup);
++        policyBlock.setToggleGroup(policyGroup);
++        policyAllow.setUserData("allow");
++        policyWarn.setUserData("warn");
++        policyBlock.setUserData("block");
++
++        String current = SettingsRepo.get(Session.branchId(),
++                SettingsRepo.KEY_BALANCE_POLICY, "warn");
++        switch (current) {
++            case "allow" -> policyAllow.setSelected(true);
++            case "block" -> policyBlock.setSelected(true);
++            default -> policyWarn.setSelected(true);
++        }
++
++        if (savedHint != null) { savedHint.setVisible(false); savedHint.setManaged(false); }
++
++        // register AFTER setting the initial selection, so load doesn't trigger a spurious save
++        policyGroup.selectedToggleProperty().addListener((o, a, b) -> onPolicyChanged(b));
++    }
++
++    private void onPolicyChanged(Toggle selected) {
++        if (selected == null) return;
++        String value = (String) selected.getUserData();
++        try {
++            SettingsRepo.set(Session.branchId(), SettingsRepo.KEY_BALANCE_POLICY, value);
++            if (savedHint != null) {
++                savedHint.setText(I18n.t("settings.saved"));
++                savedHint.setVisible(true); savedHint.setManaged(true);
++            }
++        } catch (Exception e) {
++            com.agentledger.utils.Log.error(e);
++        }
++    }
++}
+diff --git a/src/main/java/com/agentledger/ui/settings/SettingsController.java b/src/main/java/com/agentledger/ui/settings/SettingsController.java
+index 131b227..dc719a1 100644
+--- a/src/main/java/com/agentledger/ui/settings/SettingsController.java
++++ b/src/main/java/com/agentledger/ui/settings/SettingsController.java
+@@ -23,6 +23,8 @@ public class SettingsController {
+ 
+     @FXML
+     public void initialize() {
++        if (Permissions.canManageBranches())
++            addTab(I18n.t("settings.tab.general"), "/fxml/settings/general.fxml");
+         addTab(I18n.t("settings.tab.fees"), "/fxml/settings/fees.fxml");
+         if (Permissions.canManageTxnTypes())
+             addTab(I18n.t("settings.tab.txntypes"), "/fxml/settings/txntypes.fxml");
+diff --git a/src/main/java/com/agentledger/ui/txn/TxnController.java b/src/main/java/com/agentledger/ui/txn/TxnController.java
+index ef83d9f..f7778e9 100644
+--- a/src/main/java/com/agentledger/ui/txn/TxnController.java
++++ b/src/main/java/com/agentledger/ui/txn/TxnController.java
+@@ -151,6 +151,19 @@ public class TxnController {
+             r.refNo = refNo.getText();
+             r.note = note.getText();
+ 
++            // Negative-balance policy: WARN asks for confirmation before overdrawing.
++            // (BLOCK is enforced inside LedgerService.post and surfaces via the catch below;
++            //  ALLOW posts silently.)
++            if (BalancePolicy.of(Session.branchId()) == BalancePolicy.WARN) {
++                LedgerService.Shortfall sf = LedgerService.projectedShortfall(r);
++                if (sf != null) {
++                    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, sf.warnMessage(),
++                            ButtonType.YES, ButtonType.NO);
++                    confirm.setHeaderText(null);
++                    confirm.showAndWait();
++                    if (confirm.getResult() != ButtonType.YES) return;
++                }
++            }
+             long id = LedgerService.post(r);
+             info(I18n.t("txn.success", id));
+             onClear();
+diff --git a/src/main/resources/fxml/settings/general.fxml b/src/main/resources/fxml/settings/general.fxml
+new file mode 100644
+index 0000000..ee911d5
+--- /dev/null
++++ b/src/main/resources/fxml/settings/general.fxml
+@@ -0,0 +1,21 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<?import javafx.scene.layout.*?>
++<?import javafx.scene.control.*?>
++<?import javafx.geometry.Insets?>
++<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
++      fx:controller="com.agentledger.ui.settings.GeneralController"
++      spacing="14" style="-fx-background-color:white;-fx-background-radius:12;-fx-border-color:#e5e9e7;-fx-border-radius:12;">
++    <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
++
++    <Label text="%settings.balancePolicy.label" style="-fx-font-weight:bold;-fx-text-fill:#0C3B3C;"/>
++    <Label text="%settings.balancePolicy.desc" wrapText="true" style="-fx-font-size:12px;-fx-text-fill:#5C6967;"/>
++
++    <VBox spacing="8">
++        <RadioButton fx:id="policyAllow" text="%settings.balancePolicy.allow"/>
++        <RadioButton fx:id="policyWarn"  text="%settings.balancePolicy.warn"/>
++        <RadioButton fx:id="policyBlock" text="%settings.balancePolicy.block"/>
++    </VBox>
++
++    <Label fx:id="savedHint" visible="false" managed="false"
++           style="-fx-text-fill:#0E7C7B;-fx-font-size:12px;"/>
++</VBox>
+diff --git a/src/main/resources/i18n/strings_my.properties b/src/main/resources/i18n/strings_my.properties
+index c57346c..aec6531 100644
+--- a/src/main/resources/i18n/strings_my.properties
++++ b/src/main/resources/i18n/strings_my.properties
+@@ -449,4 +449,7 @@ warn.balanceNegative.cash=ငွေသား လက်ကျန် အနုတ
+ settings.balancePolicy.label=လက်ကျန် အနုတ် မူဝါဒ
+ settings.balancePolicy.allow=ခွင့်ပြု
+ settings.balancePolicy.warn=သတိပေး
+-settings.balancePolicy.block=တားမြစ်
+\ No newline at end of file
++settings.balancePolicy.block=တားမြစ်
++settings.tab.general=အထွေထွေ
++settings.balancePolicy.desc=လက်ကျန်ထက် ပိုထုတ်သည့်အခါ မည်သို့ ဆောင်ရွက်မည်ကို ရွေးချယ်ပါ။
++settings.saved=သိမ်းဆည်းပြီးပါပြီ

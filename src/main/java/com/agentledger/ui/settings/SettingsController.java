@@ -23,6 +23,8 @@ public class SettingsController {
 
     @FXML
     public void initialize() {
+        if (Permissions.canManageBranches())
+            addTab(I18n.t("settings.tab.general"), "/fxml/settings/general.fxml");
         addTab(I18n.t("settings.tab.fees"), "/fxml/settings/fees.fxml");
         if (Permissions.canManageTxnTypes())
             addTab(I18n.t("settings.tab.txntypes"), "/fxml/settings/txntypes.fxml");

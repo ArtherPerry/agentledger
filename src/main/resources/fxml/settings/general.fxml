@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.agentledger.ui.settings.GeneralController"
+      spacing="14" style="-fx-background-color:white;-fx-background-radius:12;-fx-border-color:#e5e9e7;-fx-border-radius:12;">
+    <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+
+    <Label text="%settings.balancePolicy.label" style="-fx-font-weight:bold;-fx-text-fill:#0C3B3C;"/>
+    <Label text="%settings.balancePolicy.desc" wrapText="true" style="-fx-font-size:12px;-fx-text-fill:#5C6967;"/>
+
+    <VBox spacing="8">
+        <RadioButton fx:id="policyAllow" text="%settings.balancePolicy.allow"/>
+        <RadioButton fx:id="policyWarn"  text="%settings.balancePolicy.warn"/>
+        <RadioButton fx:id="policyBlock" text="%settings.balancePolicy.block"/>
+    </VBox>
+
+    <Label fx:id="savedHint" visible="false" managed="false"
+           style="-fx-text-fill:#0E7C7B;-fx-font-size:12px;"/>
+</VBox>
