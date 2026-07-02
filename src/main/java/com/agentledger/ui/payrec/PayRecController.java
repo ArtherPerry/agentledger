@@ -130,6 +130,8 @@ public class PayRecController {
         TextField name = new TextField(); name.setPromptText(I18n.t("common.name"));
         TextField phone = new TextField(); phone.setPromptText(I18n.t("payrec.phone.optional"));
         TextField amount = new TextField(); amount.setPromptText(I18n.t("common.amountKyat"));
+        com.agentledger.utils.Numeric.money(amount);
+        com.agentledger.utils.Numeric.phone(phone);
 
         GridPane g = new GridPane(); g.setHgap(10); g.setVgap(10);
         g.addRow(0, new Label(I18n.t("payrec.field.kind")), kind);

@@ -5,6 +5,7 @@ import com.agentledger.repo.FeeRuleRepo;
 import com.agentledger.service.Permissions;
 import com.agentledger.service.Session;
 import com.agentledger.utils.Money;
+import com.agentledger.utils.Numeric;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -109,6 +110,11 @@ public class FeesController {
         TextField fee = new TextField(rule == null ? "0.5" : String.valueOf(rule.feePct()));
         TextField minFee = new TextField(rule == null ? "500" : Money.format(rule.minFeePya()));
         TextField comm = new TextField(rule == null ? "0.3" : String.valueOf(rule.commPct()));
+        TextField minComm = new TextField(rule == null ? "0" : Money.format(rule.minCommPya()));
+
+        // English-only numeric entry
+        Numeric.money(min, max, minFee, minComm);
+        Numeric.decimal(fee, comm);
 
         javafx.scene.layout.GridPane g = new javafx.scene.layout.GridPane();
         g.setHgap(10); g.setVgap(10);
@@ -119,6 +125,7 @@ public class FeesController {
         g.addRow(4, new Label(I18n.t("fees.field.feePct")), fee);
         g.addRow(5, new Label(I18n.t("fees.field.minFee")), minFee);
         g.addRow(6, new Label(I18n.t("fees.field.commPct")), comm);
+        g.addRow(7, new Label(I18n.t("fees.field.minComm")), minComm);
         dlg.getDialogPane().setContent(g);
 
         dlg.setResultConverter(bt -> {
@@ -136,6 +143,7 @@ public class FeesController {
                             Double.parseDouble(fee.getText().trim()),
                             Money.parse(minFee.getText()),
                             Double.parseDouble(comm.getText().trim()),
+                            Money.parse(minComm.getText()),
                             true);
                     if (r.platform().isBlank()) throw new IllegalArgumentException(I18n.t("fees.err.platformRequired"));
                     if (type.getValue() == null) throw new IllegalArgumentException(I18n.t("fees.err.platformRequired"));

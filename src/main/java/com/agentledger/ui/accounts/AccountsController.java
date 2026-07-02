@@ -162,6 +162,7 @@ public class AccountsController {
         dlg.setTitle(what);
         dlg.setHeaderText(acc.name() + " — " + what);
         dlg.setContentText(I18n.t("accounts.topup.amount"));
+        com.agentledger.utils.Numeric.money(dlg.getEditor());
         dlg.showAndWait().ifPresent(input -> {
             try {
                 long amt = Money.parse(input);

@@ -11,7 +11,7 @@ public final class FeeRuleRepo {
 
     public static List<FeeRule> listForBranch(int branchId) {
         List<FeeRule> out = new ArrayList<>();
-        String sql = "SELECT id,type_name,platform,min_amount_pya,max_amount_pya,fee_pct,min_fee_pya,comm_pct,active " +
+        String sql = "SELECT id,type_name,platform,min_amount_pya,max_amount_pya,fee_pct,min_fee_pya,comm_pct,min_comm_pya,active " +
                 "FROM fee_rules WHERE branch_id=? ORDER BY type_name, platform, min_amount_pya";
         try {
             Connection c = Database.get();
@@ -24,6 +24,7 @@ public final class FeeRuleRepo {
                         out.add(new FeeRule(rs.getInt("id"), rs.getString("type_name"), rs.getString("platform"),
                                 rs.getLong("min_amount_pya"), maxBox, rs.getDouble("fee_pct"),
                                 rs.getLong("min_fee_pya"), rs.getDouble("comm_pct"),
+                                rs.getLong("min_comm_pya"),
                                 rs.getInt("active") == 1));
                     }
                 }
@@ -35,8 +36,8 @@ public final class FeeRuleRepo {
     public static void insert(int branchId, FeeRule r) throws Exception {
         Connection c = Database.get();
         try (PreparedStatement ps = c.prepareStatement(
-                "INSERT INTO fee_rules(branch_id,type_name,platform,min_amount_pya,max_amount_pya,fee_pct,min_fee_pya,comm_pct,active) " +
-                        "VALUES (?,?,?,?,?,?,?,?,1)")) {
+                "INSERT INTO fee_rules(branch_id,type_name,platform,min_amount_pya,max_amount_pya,fee_pct,min_fee_pya,comm_pct,min_comm_pya,active) " +
+                        "VALUES (?,?,?,?,?,?,?,?,?,1)")) {
             ps.setInt(1, branchId);
             ps.setString(2, r.typeName());
             ps.setString(3, r.platform());
@@ -45,6 +46,7 @@ public final class FeeRuleRepo {
             ps.setDouble(6, r.feePct());
             ps.setLong(7, r.minFeePya());
             ps.setDouble(8, r.commPct());
+            ps.setLong(9, r.minCommPya());
             ps.executeUpdate();
         }
     }
@@ -52,7 +54,7 @@ public final class FeeRuleRepo {
     public static void update(FeeRule r) throws Exception {
         Connection c = Database.get();
         try (PreparedStatement ps = c.prepareStatement(
-                "UPDATE fee_rules SET type_name=?,platform=?,min_amount_pya=?,max_amount_pya=?,fee_pct=?,min_fee_pya=?,comm_pct=? WHERE id=?")) {
+                "UPDATE fee_rules SET type_name=?,platform=?,min_amount_pya=?,max_amount_pya=?,fee_pct=?,min_fee_pya=?,comm_pct=?,min_comm_pya=? WHERE id=?")) {
             ps.setString(1, r.typeName());
             ps.setString(2, r.platform());
             ps.setLong(3, r.minAmountPya());
@@ -60,7 +62,8 @@ public final class FeeRuleRepo {
             ps.setDouble(5, r.feePct());
             ps.setLong(6, r.minFeePya());
             ps.setDouble(7, r.commPct());
-            ps.setInt(8, r.id());
+            ps.setLong(8, r.minCommPya());
+            ps.setInt(9, r.id());
             ps.executeUpdate();
         }
     }

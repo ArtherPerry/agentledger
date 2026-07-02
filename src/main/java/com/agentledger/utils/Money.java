@@ -1,22 +1,20 @@
 package com.agentledger.utils;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 
 /** All money is stored as long pya (1 kyat = 100 pya). Display only at the UI edge. */
 public final class Money {
-    private static final char[] MM = {'၀','၁','၂','၃','၄','၅','၆','၇','၈','၉'};
-    private static final DecimalFormat FMT = new DecimalFormat("#,##0.00");
+    // Locale.ROOT keeps digits/separators as ASCII "1,234.56" regardless of the OS locale.
+    private static final DecimalFormat FMT =
+            new DecimalFormat("#,##0.00", DecimalFormatSymbols.getInstance(Locale.ROOT));
 
     private Money() {}
 
-    /** pya -> "၂,၅၀၀.၅၀" (Myanmar numerals, 2 decimals). */
+    /** pya -> "2,500.50" (English numerals, 2 decimals). */
     public static String format(long pya) {
-        String latin = FMT.format(pya / 100.0);
-        StringBuilder sb = new StringBuilder(latin.length());
-        for (char c : latin.toCharArray()) {
-            sb.append(c >= '0' && c <= '9' ? MM[c - '0'] : c);
-        }
-        return sb.toString();
+        return FMT.format(pya / 100.0);
     }
 
     /** "2,500.50" or "၂,၅၀၀.၅၀" -> 250050 pya. */

@@ -21,7 +21,7 @@ public final class FeeService {
 
         // A max of NULL or <= 0 means "no upper limit" (a 0 max would otherwise match nothing).
         // Platform match is space/case-insensitive so "Wave Money" and "WaveMoney" are the same.
-        String sql = "SELECT fee_pct, min_fee_pya, comm_pct FROM fee_rules " +
+        String sql = "SELECT fee_pct, min_fee_pya, comm_pct, min_comm_pya FROM fee_rules " +
                 "WHERE branch_id=? AND type_name=? " +
                 "AND REPLACE(LOWER(platform),' ','') = REPLACE(LOWER(?),' ','') AND active=1 " +
                 "AND ? >= min_amount_pya AND (max_amount_pya IS NULL OR max_amount_pya <= 0 OR ? <= max_amount_pya) " +
@@ -39,9 +39,11 @@ public final class FeeService {
                     double feePct = rs.getDouble("fee_pct");
                     long minFee  = rs.getLong("min_fee_pya");
                     double commPct = rs.getDouble("comm_pct");
+                    long minComm = rs.getLong("min_comm_pya");
                     long fee = Math.round(amountPya * feePct / 100.0);
                     if (fee < minFee) fee = minFee;
                     long comm = Math.round(amountPya * commPct / 100.0);
+                    if (comm < minComm) comm = minComm;
                     return new FeeResult(fee, comm);
                 }
             }

@@ -9,5 +9,6 @@ public record FeeRule(
         double feePct,
         long minFeePya,
         double commPct,
+        long minCommPya,
         boolean active
 ) {}

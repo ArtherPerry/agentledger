@@ -85,6 +85,17 @@ public final class Database {
                     s.executeUpdate("UPDATE txn_types SET is_builtin = 1 WHERE name IN (" + builtinList + ")");
                 }
             },
+            // v8 -> v9: fee rules get a minimum-commission floor (mirrors min_fee_pya) so a flat
+            // per-band commission can be represented as comm_pct=0 + min_comm_pya=<flat>. Idempotent.
+            conn -> {
+                try (Statement s = conn.createStatement()) {
+                    boolean hasCol = false;
+                    try (ResultSet rs = s.executeQuery("PRAGMA table_info(fee_rules)")) {
+                        while (rs.next()) if ("min_comm_pya".equals(rs.getString("name"))) hasCol = true;
+                    }
+                    if (!hasCol) s.executeUpdate("ALTER TABLE fee_rules ADD COLUMN min_comm_pya INTEGER NOT NULL DEFAULT 0");
+                }
+            },
     };
 
     /** Schema version the code expects = baseline + number of migrations. */

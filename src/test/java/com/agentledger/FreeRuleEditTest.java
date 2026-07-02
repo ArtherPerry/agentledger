@@ -19,7 +19,7 @@ class FeeRuleEditTest extends TestBase {
         FeeRule aya = FeeRuleRepo.listForBranch(1).stream()
                 .filter(r -> "AYA Pay".equals(r.platform())).findFirst().orElseThrow();
         FeeRule updated = new FeeRule(aya.id(), W, "AYA Pay", aya.minAmountPya(), aya.maxAmountPya(),
-                1.0, aya.minFeePya(), aya.commPct(), true);
+                1.0, aya.minFeePya(), aya.commPct(), aya.minCommPya(), true);
         FeeRuleRepo.update(updated);
         // now the engine must use 1.0%
         assertEquals(500_000L, FeeService.compute(1, W, "AYA Pay", 50_000_000L).feePya()); // 1.0%
@@ -28,7 +28,7 @@ class FeeRuleEditTest extends TestBase {
     @Test void newRule_appliesImmediately() throws Exception {
         // no rule for "CB Pay" yet -> fee 0
         assertEquals(0L, FeeService.compute(1, W, "CB Pay", 50_000_000L).feePya());
-        FeeRuleRepo.insert(1, new FeeRule(0, W, "CB Pay", 0L, null, 0.6, 50_000L, 0.3, true));
+        FeeRuleRepo.insert(1, new FeeRule(0, W, "CB Pay", 0L, null, 0.6, 50_000L, 0.3, 0L, true));
         assertEquals(300_000L, FeeService.compute(1, W, "CB Pay", 50_000_000L).feePya()); // 0.6%
     }
 }

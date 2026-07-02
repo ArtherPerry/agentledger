@@ -9,7 +9,7 @@ import java.sql.PreparedStatement;
 public final class SeedData {
     private SeedData() {}
 
-    /** Insert the 9 standard transaction types for a branch, using canonical names. */
+    /** Insert the 14 standard transaction types for a branch, using canonical names. */
     public static void insertTxnTypes(Connection c, int branchId) throws Exception {
         String[][] types = {
                 {TxnType.PASSWORD_WITHDRAW, "out", "in"},
@@ -17,12 +17,17 @@ public final class SeedData {
                 {TxnType.WALLET_TO_WALLET,  "none", "out"},
                 {TxnType.ACCOUNT_WITHDRAW,  "out", "in"},
                 {TxnType.CASH_TO_ACCOUNT,   "in", "out"},
+                {TxnType.AGENT_CASHIN,      "in", "out"},
+                {TxnType.CUS_TO_SHOP,       "out", "in"},
+                {TxnType.RENT2OWN_DEPOSIT,  "in", "out"},
+                {TxnType.RENT2OWN_CASH_OUT, "out", "in"},
+                {TxnType.WIFI_FEE,          "in", "out"},
                 {TxnType.TOPUP_DIGITAL,     "none", "in"},
                 {TxnType.TOPUP_CASH,        "in", "none"},
                 {TxnType.REPAY_RECEIVABLE,  "in", "none"},
                 {TxnType.REPAY_PAYABLE,     "out", "none"},
         };
-        // All nine seeded types are built-in (display_name defaults to the canonical name;
+        // All seeded types are built-in (display_name defaults to the canonical name;
         // owner can rename via Settings, but built-ins can never be deleted).
         String sql = "INSERT INTO txn_types(branch_id,name,display_name,cash_effect,digital_effect,active,sort_order,is_builtin) " +
                 "VALUES (?,?,?,?,?,1,?,1)";

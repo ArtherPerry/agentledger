@@ -19,3 +19,4 @@ license.key
 *.db-shm
 app.log
 *.bak
+*.patch

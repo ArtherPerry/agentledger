@@ -7,6 +7,7 @@ import com.agentledger.model.*;
 import com.agentledger.repo.*;
 import com.agentledger.service.*;
 import com.agentledger.utils.Money;
+import com.agentledger.utils.Numeric;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -35,6 +36,10 @@ public class TxnController {
         typeBox.setItems(FXCollections.observableArrayList(TxnTypeRepo.listForBranch(branch)));
         accountBox.setItems(FXCollections.observableArrayList(AccountRepo.listForBranch(branch)));
         toAccountBox.setItems(FXCollections.observableArrayList(AccountRepo.digitalForBranch(branch)));
+
+        // English-only numeric entry (blocks Burmese digits / letters on any keyboard)
+        Numeric.money(amount, feeField, commField);
+        Numeric.phone(senderPhone, receiverPhone);
 
         typeBox.valueProperty().addListener((o, a, b) -> { updateToAccountVisibility(); recompute(); });
         accountBox.valueProperty().addListener((o, a, b) -> recompute());

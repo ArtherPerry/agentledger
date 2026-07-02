@@ -68,6 +68,7 @@ public class CloseController {
                 return;                        // abort building the grid
             }
             TextField actual = new TextField(stripDecimals(expected));
+            com.agentledger.utils.Numeric.money(actual);
             actual.setDisable(closed);
             actual.textProperty().addListener((o, x, y) -> recompute());
             Label diff = new Label(Money.format(0));
